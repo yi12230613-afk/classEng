@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏫 창의적인 학급 자리 바꾸기 (Class Seat Picker)</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar: Settings & Student Management -->
+        <aside class="sidebar glass">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-graduation-cap logo-icon"></i>
+                <h2>학급 자리 바꾸기</h2>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="students"><i class="fa-solid fa-users"></i> 학생 관리</button>
+                <button class="tab-btn" data-tab="layout"><i class="fa-solid fa-table-cells"></i> 배치 설정</button>
+                <button class="tab-btn" data-tab="rules"><i class="fa-solid fa-sliders"></i> 제약 조건</button>
+            </div>
+
+            <div class="tab-content-container">
+                <!-- Tab 1: Students -->
+                <div class="tab-content active" id="tab-students">
+                    <div class="section-title">
+                        <h3><i class="fa-solid fa-file-import"></i> 명렬 등록</h3>
+                        <span class="badge" id="student-count">0명</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="student-input">학생 이름을 줄바꿈이나 쉼표로 구분하여 입력하세요.</label>
+                        <textarea id="student-input" placeholder="김민수, 이서연, 박지민, 최준호..." rows="6"></textarea>
+                        <button id="btn-import-students" class="btn btn-primary btn-block">
+                            <i class="fa-solid fa-user-plus"></i> 학생 등록하기
+                        </button>
+                    </div>
+
+                    <div class="student-list-wrapper">
+                        <div class="list-header">
+                            <h4>등록된 학생 목록</h4>
+                            <button id="btn-clear-students" class="btn btn-danger btn-xs">전체 삭제</button>
+                        </div>
+                        <ul id="student-list" class="student-list">
+                            <li class="empty-list-msg">등록된 학생이 없습니다.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Classroom Layout -->
+                <div class="tab-content" id="tab-layout">
+                    <div class="section-title">
+                        <h3><i class="fa-solid fa-grip"></i> 교실 크기 설정</h3>
+                    </div>
+                    <div class="grid-inputs">
+                        <div class="input-field">
+                            <label for="input-rows">세로 (행 / 줄)</label>
+                            <input type="number" id="input-rows" min="2" max="10" value="5">
+                        </div>
+                        <div class="input-field">
+                            <label for="input-cols">가로 (열 / 분단)</label>
+                            <input type="number" id="input-cols" min="2" max="10" value="5">
+                        </div>
+                    </div>
+
+                    <div class="input-group mt-3">
+                        <label for="input-aisles">통로(복도) 배치 (열 번호 입력, 쉼표 구분)</label>
+                        <input type="text" id="input-aisles" placeholder="예: 3" value="3">
+                        <small class="help-text">예: '3'을 입력하면 3열과 4열 사이에 통로가 배치됩니다.</small>
+                    </div>
+
+                    <div class="input-group mt-3">
+                        <label>좌석 수 대비 학생 수 비율</label>
+                        <div class="ratio-bar-container">
+                            <div class="ratio-bar-fill" id="ratio-fill" style="width: 0%;"></div>
+                        </div>
+                        <span class="ratio-text" id="ratio-text">좌석 30개 / 학생 0명 (0%)</span>
+                    </div>
+
+                    <button id="btn-apply-layout" class="btn btn-secondary btn-block mt-3">
+                        <i class="fa-solid fa-rotate"></i> 배치 구조 적용하기
+                    </button>
+                </div>
+
+                <!-- Tab 3: Constraints & Rules -->
+                <div class="tab-content" id="tab-rules">
+                    <div class="section-title">
+                        <h3><i class="fa-solid fa-thumbtack"></i> 앞자리 고정 학생</h3>
+                    </div>
+                    <div class="input-group">
+                        <label for="select-front-student">앞자리(1~2열)에 고정할 학생 선택</label>
+                        <div class="flex-row">
+                            <select id="select-front-student" class="flex-grow">
+                                <option value="">학생을 선택하세요</option>
+                            </select>
+                            <button id="btn-add-front" class="btn btn-secondary btn-icon-only"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        <div class="tags-container" id="front-students-tags">
+                            <!-- Tags added dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="section-title mt-4">
+                        <h3><i class="fa-solid fa-user-slash"></i> 기피 대상 지정</h3>
+                    </div>
+                    <div class="input-group">
+                        <label>서로 붙여 앉히지 않을 두 학생 선택</label>
+                        <div class="flex-row gap-sm">
+                            <select id="select-avoid-student-1" class="flex-grow">
+                                <option value="">학생 1</option>
+                            </select>
+                            <span class="vs-text"><i class="fa-solid fa-arrows-left-right"></i></span>
+                            <select id="select-avoid-student-2" class="flex-grow">
+                                <option value="">학생 2</option>
+                            </select>
+                            <button id="btn-add-avoid" class="btn btn-secondary btn-icon-only"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        <div class="avoid-list-container mt-2">
+                            <ul id="avoid-pairs-list" class="avoid-pairs-list">
+                                <!-- Pairs added dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Display Area -->
+        <main class="main-content">
+            <!-- Top Controls Toolbar -->
+            <header class="toolbar glass">
+                <div class="mode-selector">
+                    <span class="mode-label">뽑기 모드:</span>
+                    <button class="mode-btn active" data-mode="roulette">
+                        <i class="fa-solid fa-spinner"></i> 🎰 룰렛 돌리기
+                    </button>
+                    <button class="mode-btn" data-mode="shuffle">
+                        <i class="fa-solid fa-bolt"></i> ⚡ 전원 동시 랜덤
+                    </button>
+                    <button class="mode-btn" data-mode="gift">
+                        <i class="fa-solid fa-gift"></i> 🎁 선물 상자 열기
+                    </button>
+                </div>
+
+                <div class="actions">
+                    <button id="btn-run-action" class="btn btn-accent">
+                        <i class="fa-solid fa-play"></i> <span id="action-btn-text">배치 시작</span>
+                    </button>
+                    <button id="btn-reset-board" class="btn btn-outline">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> 배치 초기화
+                    </button>
+                    <button id="btn-export-image" class="btn btn-outline-secondary" title="이미지로 저장">
+                        <i class="fa-solid fa-camera"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Classroom Layout Display -->
+            <div class="classroom-container">
+                <div class="blackboard">
+                    <span>칠 판 (Board)</span>
+                </div>
+                
+                <div id="classroom-grid-wrapper" class="classroom-grid-wrapper">
+                    <!-- Dynamic seats grid rendered here -->
+                </div>
+            </div>
+
+            <!-- Bottom Info Bar -->
+            <footer class="info-bar glass">
+                <div class="info-item">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span id="info-status-text">학생을 등록하고 배치 구조를 적용한 뒤 자리 바꾸기를 시작하세요.</span>
+                </div>
+                <div class="info-stats">
+                    <span>대기 인원: <strong id="wait-count">0</strong>명</span>
+                    <span>배치된 인원: <strong id="placed-count">0</strong>명</span>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Roulette Overlay Modal -->
+    <div class="modal-overlay" id="roulette-modal">
+        <div class="modal-content glass">
+            <h3>🎰 룰렛 뽑기</h3>
+            <div class="roulette-container">
+                <!-- Roulette visualization -->
+                <div class="roulette-pointer"></div>
+                <div class="roulette-wheel-outer">
+                    <div id="roulette-wheel" class="roulette-wheel"></div>
+                </div>
+                <div class="roulette-center"></div>
+            </div>
+            <div class="winner-announcement" id="winner-text">룰렛이 도는 중...</div>
+            <div class="modal-actions">
+                <button id="btn-skip-roulette" class="btn btn-secondary">결과 바로보기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Particle/Confetti Container -->
+    <div id="confetti-container"></div>
+
+    <!-- html2canvas for exporting layout as image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- App JavaScript Modules -->
+    <script src="js/roulette.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
